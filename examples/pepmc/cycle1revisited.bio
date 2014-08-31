@@ -1,0 +1,13 @@
+VARS:X,Y,Z
+PARAMS:p,0,1.1;q,0.2,0.8
+
+EQ:X = p*rpcoor(Y,3.9,6.1,0,1) + -0.1*X
+EQ:Y = q*rpcoor(X,4.9,5.1,0,1) + -0.1*Y
+EQ:Z = 6.5*p*X*Y + -0.1*Z
+
+THRES:X:0,11
+THRES:Y:0,12
+THRES:Z:0,13
+INIT:X:1,11;Y:0,12;Z:0,13
+
+system async;

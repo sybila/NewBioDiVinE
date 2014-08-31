@@ -1,0 +1,155 @@
+#!/bin/bash
+
+GNUPLOT=gnuplot
+GV=gv
+
+TMPDIR=plotlog.tmpdir
+
+cmatrix()
+{
+NL=`grep -v '^#' $FULLNAME.00|nl|tail -n 1 |sed 's/^ *//'|sed 's/\t.*//'`
+for k in `seq -w 1 $NL`; do
+    l=`echo $k|sed 's/^0*//'`
+    TF1=$TF.matrix.$k
+    echo -n >$TF1
+    for j in `ls $FULLNAME.??`; do
+    grep -v '^#' $j|nl| grep "^[ ]*$l\W"| cut -f$((1+$1))|sed 's/,/\t/g' >>$TF1
+    done
+done
+
+ALL=""
+for j in `ls $FULLNAME.??`; do
+    tmpALL=`grep -v '^#' $j|nl| grep "^[ ]*$l\W"| cut -f$((1+$1))|tr "," "\n"`
+    ALL=$ALL" "$tmpALL
+done
+
+MAX=0
+for i in $ALL; do 
+ if [ $i -gt $MAX ]; 
+ then MAX=$i;
+ fi;
+done
+
+echo "set xlabel \"Workstation Id\"" >>$TF
+echo "set ylabel \"Workstation Id\"" >>$TF
+echo "set xtics 1" >>$TF
+echo "set ytics 1" >>$TF
+echo "set zlabel \"Messages\"" >>$TF
+echo "set ticslevel 0" >>$TF
+echo "set hidden3d" >>$TF
+if [ $EPS = "yes" ]
+then 
+  echo "set output \""$OF"matrix.eps\"" >>$TF
+  echo -n "splot [][][1:$MAX] \"$TF.matrix.$NL\" matrix " >>$TF 
+  echo "title \"Communication matrix\" with linespoints" >>$TF
+else
+  echo -n "splot [][][1:$MAX] \"$TF.matrix.$NL\" matrix " >>$TF
+  echo "title \"Communication matrix\" with linespoints" >>$TF
+  echo "set output \"$OF.matrix.ps\"" >>$TF
+  for i in `seq -w 1 $NL`; do
+    echo -n "splot [][][1:$MAX] \"$TF.matrix.$i\" matrix " >>$TF
+    echo "title \"Communication matrix ($i sec)\" with linespoints" >>$TF    
+  done
+fi
+}
+
+version()
+{
+echo "$MYNAME version 1.0"
+}
+
+usage()
+{
+echo
+echo "This program uses gnuplot to produce (e)ps graphs from DiVinE log files."
+echo "If log files are filename.dve.00, filename.dve.01, etc, $MYNAME will"
+echo "produce files filename.log.ps and filename.log.matrix.ps."
+echo
+echo "Usage: $MYNAME [switches] filename.dve"
+echo "switches:"
+echo " -e       generate eps instead of ps"
+echo " -g       run gv and shows produced graphs (does not work with eps mode)"
+echo " -r       do not remove temporary dir ($TMPDIR)"
+echo " -v       show $MYNAME version"
+echo
+}
+
+
+mkdir -p $TMPDIR
+MYNAME=`echo $0|sed 's!.*/!!'`
+TF=$TMPDIR/tmpfile.plot
+EPS="no"
+RUNGV="no"
+RMTMP="yes"
+while getopts rhgve VOLBA
+  do
+    case $VOLBA in
+    e)     EPS="yes";;
+    g)     RUNGV="yes";;
+    r)     RMTMP="no";;
+    v)     version;exit 1;;
+    \?|h)   usage
+           rm -rf "$TMPDIR"
+           exit 1;;
+    esac
+done
+shift $(($OPTIND-1))
+
+if [ $# -lt 1 ];
+  then
+    usage
+    exit 1
+fi
+
+FULLNAME=$1
+INNAME=`echo $1|sed 's/.dve$//'`
+
+if [ $EPS = "no" ];
+then OF=$INNAME.log; 
+else OF=$INNAME.log_;
+fi
+
+
+CATEGORIES=`cat $FULLNAME.00|nl| grep "^[ ]*3.#"|sed 's/.*user/user/'`
+
+echo -n set terminal postscript >$TF
+if [ $EPS = "yes" ]
+then echo " eps" >>$TF
+else echo >>$TF
+     echo set output \"$OF.ps\" >>$TF
+fi
+echo set key left top >>$TF
+echo set xlabel \"Time \(seconds\)\" >>$TF
+
+I=1
+for i in $CATEGORIES; do
+#    echo Category: $i
+    I=$(($I+1));
+    if [ $i = "cmatrix" ]
+    then cmatrix $I; continue
+    fi
+    if [ $EPS = "yes" ]
+    then echo set output \"$OF$i.eps\" >>$TF
+    fi
+    echo set ylabel \"$i\" >>$TF
+    set key \"$i\" >>$TF
+    echo -n "plot " >>$TF
+    for j in `ls $FULLNAME.??`; do
+     echo -n \"$j\" using 1:$I title \"$i-$j\" with lines >>$TF
+     echo ,\\ >>$TF
+    done
+    echo 0 notitle >>$TF
+done
+
+$GNUPLOT $TF
+
+if [ $RMTMP = "yes" ]
+then rm -rf $TMPDIR
+fi
+
+if [ $RUNGV = "yes" ] && [ $EPS = "no" ]
+then gv $OF.ps & gv $OF.matrix.ps
+fi
+
+
+

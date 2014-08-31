@@ -1,0 +1,9 @@
+syntax: glob
+pmc
+Debug
+Release
+ipch
+**.opensdf
+**.sdf
+**.suo
+**.user

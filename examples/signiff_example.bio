@@ -1,0 +1,16 @@
+VARS:A,B,C,D
+
+EQ:A = (-1)*A
+EQ:B = 1*A
+EQ:C = (-0.1)*C
+EQ:D = 0.1*C
+
+THRES:A:0.0001,3,7,10
+THRES:B:0.0001,3,7,10
+THRES:C:0.0001,3,7,10
+THRES:D:0.0001,3,7,10
+
+INIT: A:7,10; B:0.0001,3; C:7,10; D:0.0001,3
+
+system async;
+

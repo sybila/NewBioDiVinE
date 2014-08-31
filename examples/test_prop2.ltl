@@ -1,0 +1,6 @@
+#define a y>4.8
+#define a y<4.8
+#define b y > 4.8
+
+
+#property (F b)

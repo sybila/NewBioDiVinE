@@ -1,0 +1,27 @@
+
+// Michaelis Menten model (2-step-phosporylation)
+//   E + G = EG = EGp -> Gp + E
+
+// note: EGp and EG are conserved w.r.t. remaining vars
+//		   EGp(t) = EGp(0) + E(0) + EG(0) - E(t) - EG(t)
+//		   Gp(t) = Gp(0) - E(0) + G(0) + E(t) - G(t)
+
+// I am unable to set the model in order to satisfy sanity (closeness).
+
+VARS:G, E, EG, EGp, Gp
+
+EQ:G = (-2)*G*E + 1*EG
+EQ:E = (-2)*G*E + 1*EG + 0.1*EGp
+EQ:EG = 2*G*E + (-1)*EG + 2*EGp + (-1)*EG
+EQ:EGp = 2*EG + (-1)*EGp + (-0.1)*EGp
+EQ:Gp = 0.1*EGp
+
+THRES:G:0.001,0.0015
+THRES:E:0.001,3,6,9
+THRES:EG:0.01,1,2,3
+THRES:EGp:0.01,0.5,1.5,3
+THRES:Gp:0.01,3,6,9
+
+INIT: G:0.001,0.0015; E:6,9; EG:0.01,1; EGp:0.01,0.5; Gp:0.01,3
+
+system async;

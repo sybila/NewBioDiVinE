@@ -1,0 +1,27 @@
+VARS: u, v, w, s
+
+PARAMS: e,0.1,1
+
+CONSTS:	th_v,0.3; u_u,1.55; T_fi~,9.090909091; th_w,0.13; T_si~,0.529801325; th_o,0.006; T_o2~,0.166666667; T_o1~,0.0025; k_so,2.0458; u_so,0.65; T_so2,0.9957; T_so1,30.0181; Tm_v1~,0.016666667; Tm_v2~,0.000869565; Tp_v~,0.689369916; T_v_inf~,14.285714286; thm_v,0.3; w_inf_star,0.94; km_w,65; um_w,0.03; Tm_w2,15; Tm_w1,60; Tp_w~,0.005; k_s,2.0994; u_s,0.9087; T_s1~,0.365737693; T_s2~,0.0625
+
+//	thm_v = 0.3		<---	nevim co je theta v minus, nie je v tabulke
+//	T_v_inf je T_w_inf
+//!!!!!!	X~ means 1/X	!!!!!
+
+EQ: u = e - ( -Hp(u,th_v,0,1)*v*(u - th_v)*(u_u - u)*T_fi~ + -Hp(u,th_w,0,1)*w*s*T_si~ + Hm(u,th_w,1,0)*u*Hm(u,th_o,T_o2~,T_o1~) + Hp(u,th_w,0,1)*Sminv(u,k_so,u_so,T_so2,T_so1) )
+EQ: v = Hm(u,th_v,1,0)*( Hm(u,th_o,1,0) - v )*Hp(u,th_o,Tm_v1~,Tm_v2~) - Hp(u,th_v,0,1)*v*Tp_v~
+EQ: w = Hm(u,th_w,1,0)*( ( Hm(u,th_o,1,0)*( 1 - u*T_v_inf~ ) + Hp(u,thm_v,0,1)*w_inf_star ) - w )*Sminv(u,km_w,um_w,Tm_w2,Tm_w1) - Hp(u,th_w,0,1)*w*Tp_w~
+EQ: s = ( Sp(u,k_s,u_s,0,1) - s )*Hp(u,th_w,T_s1~,T_s2~) + Hillp(u,0.5,2,0,1)
+
+
+THRES: u: 0, 0.001, 0.006, 0.03, 0.13, 0.3, 0.65, 0.9087, 1.5
+THRES: v: 0.0, 0.95, 1.0
+THRES: w: 0.0, 0.95, 1.0
+THRES: s: 0.0, 0.01, 1.0
+
+INIT: u:0.0,0.001; v:0.0,0.95; w:0.0,0.95; s:0.01,1.0
+
+VAR_POINTS: u: 500, 10
+
+system async;
+

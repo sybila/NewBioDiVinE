@@ -1,0 +1,662 @@
+%scanner		../scanner/Scanner.h
+%scanner-token-function d_scanner.lex()
+
+
+%union {
+	double	dvalue;
+	char*	svalue;
+}
+
+%token <svalue> VAR_LINE
+%token <svalue> PARAM_LINE
+%token <svalue> EQ_LINE
+%token <svalue> THRES_LINE
+%token <svalue> CONST_LINE
+%token <svalue> INIT_LINE
+%token <svalue> BA_LINE
+%token <svalue> VAR_POINTS_LINE
+
+%token <svalue> NAME
+
+%token <dvalue> NUMBER
+
+%token <svalue> RAMP
+
+%token <svalue> SIGM
+
+%token <svalue> STEP
+
+%token <svalue> HILL
+
+%left '+' '-'
+%left '*'
+%nonassoc '='
+//',' ';' ':'
+
+%start start
+
+
+%%
+
+
+start:	line '\n'               {
+                                    line_num++;
+                                    d_scanner.column_num = 1;
+                                }
+	|	start line '\n'         {
+                                    line_num++;
+                                    d_scanner.column_num = 1;
+                                }
+;
+
+line:       /* empty line */
+    |   EQ_LINE 	eq_defs
+	|	PARAM_LINE 	param_defs      {
+                                        if(wasEQ) {
+                                            error("Error: PARAMAS definition must be before EQ definition");
+                                            exit(1);
+                                        }
+                                    }
+	|	VAR_LINE 	var_defs        {
+										if(testing) std::cerr << "\n";
+                                        if(wasEQ) {
+                                            error("Error: VARS definition must be before EQ definition");
+                                            exit(1);
+                                        }
+                                    }
+	|	THRES_LINE 	thres_defs
+	|   CONST_LINE  const_defs      {
+                                        if(wasEQ) {
+                                            error("Error: CONSTS definition must be before EQ definition");
+                                            exit(1);
+                                        }
+                                    }
+	|   INIT_LINE   init_defs
+	|   BA_LINE                     {
+                                        if(run) {
+                                            // V ba JE CELY RIADOK BEZ UVODNEHO 'BA:' A PRIPADNYCH BIELICH ZNAKOV AZ PO SKUTOCNY ZACIATOK
+                                            std::string ba = d_scanner.matched().substr(d_scanner.matched().find_first_not_of(" \t",3));
+                                            //std::cerr << ba << std::endl;
+                                            storage.AddBaLine(ba);
+                                        }
+                                    }
+    |   VAR_POINTS_LINE     var_points_defs
+;
+
+var_points_defs:    var_points_def
+    |               var_points_defs ';' var_points_def
+;
+
+var_points_def:     var_points_name ':' var_points_values
+;
+
+var_points_name:        NAME                            {
+                                                            if(run) {
+                                                                storage.AddVarPointsName(d_scanner.matched());
+                                                            }
+                                                        }
+;
+
+var_points_values:      var_points_value ',' NUMBER     {
+                                                            if(run) {
+                                                                storage.AddVarPointsSndValue(d_scanner.matched());
+                                                            }
+                                                        }
+;
+
+var_points_value:       NUMBER                          {
+                                                            if(run) {
+                                                                storage.AddVarPointsFstValue(d_scanner.matched());
+                                                            }
+                                                        }
+;
+
+init_defs:      init_def
+    |           init_defs ';' init_def
+;
+
+init_def:       init_name ':' init_interval     {
+                                                    if(testing) std::cerr << '\n';
+                                                }
+;
+
+init_name:      NAME                {
+                                        if(testing) std::cerr << "Init:" << d_scanner.matched() << ":";
+                                        if(run) {
+                                            storage.AddInitsName(d_scanner.matched());
+                                        }
+                                    }
+;
+
+init_interval:      init_value ',' NUMBER       {
+                                                    if(testing) std::cerr << '-' << d_scanner.matched();
+                                                    if(run) {
+                                                        storage.AddInitsSndValue(d_scanner.matched());
+                                                    }
+                                                }
+;
+
+init_value:     NUMBER              {
+                                        if(testing) std::cerr << d_scanner.matched();
+                                        if(run) {
+                                            storage.AddInitsFstValue(d_scanner.matched());
+                                        }
+                                    }
+;
+
+const_defs:     const_def
+    |           const_defs ';' const_def
+;
+
+const_def:      const_name ',' const_value
+;
+
+const_name:         NAME            {
+                                        if(testing) std::cerr << d_scanner.matched() << ":";
+                                        storage.AddConstantName(d_scanner.matched());
+                                    }
+;
+
+const_value:        NUMBER          {
+                                        if(testing) std::cerr << d_scanner.matched() << std::endl;
+                                        storage.AddConstantValue(std::stod(d_scanner.matched()));
+                                    }
+		|			'-' NUMBER      {
+                                        if(testing) std::cerr << "-" << d_scanner.matched() << std::endl;
+                                        storage.AddConstantValue(std::stod(std::string("-")+d_scanner.matched()));
+                                    }
+;
+
+thres_defs:     thres_name ':' thres_values     {
+                                                    if(testing) std::cerr << "\n";
+                                                }
+;
+
+thres_name:         NAME            {
+                                        if(testing) std::cerr << d_scanner.matched() << ":";
+                                        if(run) {
+                                            storage.AddThresholdName(d_scanner.matched());
+                                        }
+                                    }
+;
+
+thres_values:		NUMBER					{
+                                                if(testing) std::cerr << d_scanner.matched();
+                                                if(run) {
+                                                    storage.AddThresholdValue(d_scanner.matched());
+                                                }
+                                            }
+	|			thres_values ',' NUMBER		{
+                                                if(testing) std::cerr << "," << d_scanner.matched();
+                                                if(run) {
+                                                    storage.AddThresholdValue(d_scanner.matched());
+                                                }
+                                            }
+;
+
+var_defs:		NAME				{
+                                        if(testing) std::cerr << d_scanner.matched();
+                                        storage.AddVariable(d_scanner.matched());
+                                    }
+	|		var_defs ',' NAME		{
+                                        if(testing) std::cerr << ',' << d_scanner.matched();
+                                        storage.AddVariable(d_scanner.matched());
+                                    }
+;
+
+param_defs:	param_def
+	|		param_defs ';' param_def
+;
+
+param_def:	param_name ',' param_interval       {
+                                                    if(testing) std::cerr << "\n";
+                                                }
+;
+
+param_interval:     param_value ',' NUMBER      {
+                                                    if(testing) std::cerr << ',' << d_scanner.matched();
+                                                    storage.AddParamRange(paramFirstValue,stod(d_scanner.matched()));
+                                                }
+		|			param_value ',' '-' NUMBER  {
+                                                    if(testing) std::cerr << ",-" << d_scanner.matched();
+                                                    storage.AddParamRange(paramFirstValue,std::stod(std::string("-")+d_scanner.matched()));
+                                                }
+;
+
+param_name:		NAME		{
+                                if(testing) std::cerr << d_scanner.matched() << ":";
+                                storage.AddParam(d_scanner.matched());
+                            }
+;
+
+param_value:	NUMBER		{
+                                if(testing) std::cerr << d_scanner.matched();
+                                paramFirstValue = stod(d_scanner.matched());
+                            }
+		|		'-' NUMBER	{
+                                if(testing) std::cerr << "-" << d_scanner.matched();
+                                paramFirstValue = std::stod(std::string("-")+d_scanner.matched());
+                            }
+;
+
+eq_defs:		eq_var '=' expr	    {
+                                        if(testing) std::cerr << "-------END-EQ-------\n";
+                                        if(testing || run) {
+                                            while(!eq.empty()) {
+                                                Entite<Parser::valueT> ent = eq.top();
+                                                //std::cerr << "-----New Entite-----\n";
+                                                //std::cerr << "ent has " << ent.GetSummembers().size() << " summembers\n";
+                                                //std::cerr << ent << std::endl;
+												//std::cerr << "--------------------\n";
+                                                storage.AddEquation(ent.GetSummembers());
+                                                eq.pop();
+                                            }
+                                        }
+                                    }
+;
+
+eq_var:     NAME            {
+                                wasEQ = true;
+                                if(testing) {
+									std::cerr  << "------START-EQ------\n";
+									std::cerr << "v_eq\t" << d_scanner.matched() << std::endl;
+								}
+                                if(run) {
+                                    storage.AddEquationName(d_scanner.matched());
+                                }
+                            }
+;
+/*
+expr:		ap
+	|	expr '+' expr
+	|	expr '-' expr
+	|	expr '*' expr
+	|	'(' '-' ap ')'
+	|	'(' expr ')'
+	|	'[' expr ']'
+;
+*/
+ap:		NUMBER		{
+                        if(testing) std::cerr << "c\t" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            ent.PutNumber(d_scanner.matched());
+                            eq.push(ent);
+                        }
+                    }
+	|	NAME		{
+                        if(testing) std::cerr << "v\t" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            ent.PutString(d_scanner.matched());
+                            eq.push(ent);
+                        }
+                    }
+	|	RAMP		{
+                        if(testing) std::cerr << "r\t" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title <<  " ";           //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            for(int i = 0; i < 4; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << ' ';        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << "\n";           //TODO: zmazat
+
+                            if(title.compare(1,1,"p") == 0) {
+                                if(title.size() == 2) {
+                                    ent.PutRp(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutRpCoor(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            } else {
+                                if(title.size() == 2) {
+                                    ent.PutRm(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutRmCoor(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            }
+                            eq.push(ent);
+                        }
+                    }
+	|	SIGM		{
+                        if(testing) std::cerr << "s\t" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title << " ";            //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            std::string points = "1";
+                            if(title.find("[") != std::string::npos) {
+                                size_t start = title.find("[");
+                                points = title.substr(start + 1,title.size() - 2 - start);
+                                //std::cerr << points << " ";               //TODO: zmazat
+                                title.erase(start);
+                            }
+
+//TODO:     BACHA TREBA SA OPYTAT NA TIE 3 PARAMETROVE SIGMOIDY
+                            for(int i = 0; i < 4; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << " ";        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << "\n";           //TODO: zmazat
+
+                            if(title.compare(1,1,"p") == 0) {
+                                if(title.size() == 2) {
+                                    ent.PutSp(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutSpInv(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            } else {
+                                if(title.size() == 2) {
+                                    ent.PutSm(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutSmInv(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            }
+                            eq.push(ent);
+                        }
+                    }
+	|	STEP		{
+                        if(testing) std::cerr << "h\t" << d_scanner.matched() << std::endl;
+						if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title << " ";            //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            for(int i = 0; i < 3; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << " ";        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << std::endl;      //TODO: zmazat
+
+                            if(title.compare(1,1,"p") == 0) {
+                                    ent.PutHp(params.at(0),params.at(1),params.at(2),params.at(3));
+                            } else {
+                                    ent.PutHm(params.at(0),params.at(1),params.at(2),params.at(3));
+                            }
+                            eq.push(ent);
+                        }
+                    }
+	|	HILL		{
+						if(testing) std::cerr << "hill\t" << d_scanner.matched() << std::endl;
+						if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title << " ";            //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            for(int i = 0; i < 4; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << " ";        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << std::endl;      //TODO: zmazat
+
+                            if(title.compare(4,1,"p") == 0) {
+                                    ent.PutHillp(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                            } else {
+                                    ent.PutHillm(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                            }
+                            eq.push(ent);
+                        }
+					}
+
+    |   '-' NUMBER	{
+                        if(testing) std::cerr << "c\t-" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            ent.PutNumber(string(d_scanner.matched()));
+                            ent.negate();
+                            eq.push(ent);
+                        }
+                    }
+	|	'-' NAME	{
+                        if(testing) std::cerr << "v\t-" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            ent.PutString(d_scanner.matched());
+                            ent.negate();
+                            eq.push(ent);
+                        }
+                    }
+	|	'-' RAMP	{
+                        if(testing) std::cerr << "r\t-" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title <<  " ";           //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            for(int i = 0; i < 4; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << ' ';        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << "\n";           //TODO: zmazat
+
+                            if(title.compare(1,1,"p") == 0) {
+                                if(title.size() == 2) {
+                                    ent.PutRp(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutRpCoor(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            } else {
+                                if(title.size() == 2) {
+                                    ent.PutRm(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutRmCoor(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            }
+                            ent.negate();
+                            eq.push(ent);
+                        }
+                    }
+	|	'-' SIGM	{
+                        if(testing) std::cerr << "s\t-" << d_scanner.matched() << std::endl;
+                        if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title << " ";            //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            std::string points = "1";
+                            if(title.find("[") != std::string::npos) {
+                                size_t start = title.find("[");
+                                points = title.substr(start + 1,title.size() - 2 - start);
+                                //std::cerr << points << " ";               //TODO: zmazat
+                                title.erase(start);
+                            }
+
+//TODO:     BACHA TREBA SA OPYTAT NA TIE 3 PARAMETROVE SIGMOIDY
+                            for(int i = 0; i < 4; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << " ";        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << "\n";           //TODO: zmazat
+
+                            if(title.compare(1,1,"p") == 0) {
+                                if(title.size() == 2) {
+                                    ent.PutSp(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutSpInv(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            } else {
+                                if(title.size() == 2) {
+                                    ent.PutSm(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                } else {
+                                    ent.PutSmInv(points,params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                                }
+                            }
+                            ent.negate();
+                            eq.push(ent);
+                        }
+                    }
+	|	'-' STEP	{
+                        if(testing) std::cerr << "h\t-" << d_scanner.matched() << std::endl;
+						if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title << " ";            //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            for(int i = 0; i < 3; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << " ";        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << std::endl;      //TODO: zmazat
+
+                            if(title.compare(1,1,"p") == 0) {
+                                    ent.PutHp(params.at(0),params.at(1),params.at(2),params.at(3));
+                            } else {
+                                    ent.PutHm(params.at(0),params.at(1),params.at(2),params.at(3));
+                            }
+                            ent.negate();
+                            eq.push(ent);
+                        }
+                    }
+	|	'-' HILL	{
+						if(testing) std::cerr << "hill\t-" << d_scanner.matched() << std::endl;
+						if(run) {
+                            Entite<Parser::valueT> ent(storage);
+                            std::string matched = d_scanner.matched();
+                            size_t startPos = 0;
+                            size_t endPos = matched.find_first_of("(");
+                            std::string title = matched.substr(startPos,endPos);
+                            //std::cerr << "\t" << title << " ";            //TODO: zmazat
+                            std::vector<std::string> params;
+
+                            for(int i = 0; i < 4; i++) {
+                                startPos = ++endPos;
+                                endPos = matched.find_first_of(",",startPos);
+                                params.push_back(matched.substr(startPos,endPos - startPos));
+                                //std::cerr << params.back() << " ";        //TODO: zmazat
+                            }
+                            params.push_back(matched.substr(++endPos,matched.find_first_of(")",endPos) - endPos));
+                            //std::cerr << params.back() << std::endl;      //TODO: zmazat
+
+                            if(title.compare(4,1,"p") == 0) {
+                                    ent.PutHillp(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                            } else {
+                                    ent.PutHillm(params.at(0),params.at(1),params.at(2),params.at(3),params.at(4));
+                            }
+                            ent.negate();
+                            eq.push(ent);
+                        }
+					}
+;
+
+expr:       summation       {
+                                if(verbatim) std::cerr << "expr -> summation\n";
+                            }
+    |       ap              {
+                                if(verbatim) std::cerr << "expr -> ap\n";
+                            }
+;
+
+summation:      summant                     {
+                                                if(verbatim) std::cerr << "summation -> summant\n";
+                                            }
+    |           summation '+' summant       {
+                                                if(verbatim) std::cerr << "summation -> summation + summant\n";
+                                                if(run) {
+                                                    Entite<Parser::valueT> temp = eq.top();
+                                                    eq.pop();
+                                                    Entite<Parser::valueT> ent = temp + eq.top();
+                                                    eq.pop();
+                                                    eq.push(ent);
+                                                }
+                                            }
+    |           summation '-' summant       {
+                                                if(verbatim) std::cerr << "summation -> summation - summant\n";
+                                                if(run) {
+                                                    Entite<Parser::valueT> temp = eq.top();
+                                                    eq.pop();
+                                                    temp.negate();
+                                                    Entite<Parser::valueT> ent = eq.top() + temp;
+                                                    eq.pop();
+                                                    eq.push(ent);
+                                                }
+                                            }
+;
+
+summant:        multiplication          {
+                                            if(verbatim) std::cerr << "summant -> multiplication\n";
+                                        }
+    |           parenthesis             {
+                                            if(verbatim) std::cerr << "summant -> parenthesis\n";
+                                        }
+;
+
+multiplication:     multiple                        {
+                                                        if(verbatim) std::cerr << "multiplication -> multiple\n";
+                                                    }
+    |               multiplication '*' multiple     {
+                                                        if(verbatim) std::cerr << "multiplication -> multiplication * multiple\n";
+                                                        if(run) {
+                                                            Entite<Parser::valueT> temp = eq.top();
+                                                            eq.pop();
+                                                            Entite<Parser::valueT> ent = temp * eq.top();
+                                                            eq.pop();
+                                                            eq.push(ent);
+                                                        }
+                                                    }
+;
+
+multiple:       ap                  {
+                                        if(verbatim) std::cerr << "multiple -> ap\n";
+                                    }
+    |           parenthesis         {
+                                        if(verbatim) std::cerr << "multiple -> parenthesis\n";
+                                    }
+;
+
+parenthesis:        '(' expr ')'        {
+                                            if(verbatim) std::cerr << "parenthesis -> ( expr )\n";
+                                        }
+;

@@ -1,0 +1,108 @@
+%class-name Scanner
+
+
+DIGIT		    [0-9]
+DIGIT1		    [1-9]
+CHAR		    [a-zA-Z]
+ALNUM		    [_0-9a-zA-Z]
+REAL_NUMBER     [0-9]+([\.][0-9]+)?
+CHAR_STRING     [a-zA-Z]+[_0-9a-zA-Z~{}]*
+
+
+%%
+
+
+{REAL_NUMBER}		{
+                        column_num += length();
+						return Parser::NUMBER;
+					}
+
+{CHAR_STRING}		{
+                        column_num += length();
+						return Parser::NAME;
+					}
+
+[Rr][mp](coor)?"("{CHAR_STRING}\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})")"		{
+                    column_num += length();
+					return Parser::RAMP;
+				}
+
+[Ss][pm](inv)*(\[(([0-9]+)|{CHAR_STRING})\])*"("{CHAR_STRING}\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})(\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING}))?\)	{
+                    column_num += length();
+					return Parser::SIGM;
+				}
+
+[Hh][mp]"("{CHAR_STRING}\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\)	{
+                    column_num += length();
+					return Parser::STEP;
+				}
+				
+[Hh]ill[mp]"("{CHAR_STRING}\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\,({REAL_NUMBER}|{CHAR_STRING})\)	{
+                    column_num += length();
+					return Parser::HILL;
+				}
+
+^(VARS:)		{
+                    column_num += length();
+					return Parser::VAR_LINE;
+				}
+^(PARAMS:)		{
+                    column_num += length();
+					return Parser::PARAM_LINE;
+				}
+^(CONSTS:)      {
+                    column_num += length();
+					return Parser::CONST_LINE;
+                }
+^(EQ:)			{
+                    column_num += length();
+					return Parser::EQ_LINE;
+				}
+^(THRES:)		{
+                    column_num += length();
+					return Parser::THRES_LINE;
+				}
+^(INIT:)        {
+                    column_num += length();
+					return Parser::INIT_LINE;
+                }
+^(BA:).+        {
+                    column_num += length();
+                    return Parser::BA_LINE;
+                }
+^(VAR_POINTS:)  {
+                    column_num += length();
+                    return Parser::VAR_POINTS_LINE;
+                }
+
+^(system)[^;]*; {
+					/* ignored */
+				}
+
+^(process).*\{([^\{\}]|[\r\n]|(\{[^\{\}]*\})*)*\} {
+					/* ignored */
+				}
+
+^#.*                  /* ignored */
+\/\/.*                /* ignored */
+\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/              /* ignored */
+
+
+" "+			{ column_num += length(); } /* ignored */
+\t+			    { column_num += length(); } /* ignored */
+
+\n			return '\n';
+
+\,          |
+\;          |
+\:          |
+\-			|
+\*			|
+\(			|
+\)			|
+\=			|
+\+			    {
+                    column_num += length();
+                    return (int) (matched()[0]);
+                }
+

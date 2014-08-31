@@ -1,0 +1,3 @@
+#define a U < 0.3
+
+#property G( a )

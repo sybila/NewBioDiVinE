@@ -1,0 +1,13 @@
+#define a1 x<0.002
+#define a2 x>0.002
+#define b01 x>0
+#define b02 x<0.0015
+#define b11 x>0.0015
+#define b12 x<0.002
+#define b21 x>0.002
+#define b22 x<0.0025
+#define b31 x>0.0025
+#define b32 x<1.2
+
+#property ((!FG(b01 && b02) && !FG(b11 && b12) && !FG(b21 && b22) && !FG(b31 && b32))) -> (G ((a1 -> F(a2)) && (a2 -> F(a1))))
+

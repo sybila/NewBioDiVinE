@@ -1,0 +1,3 @@
+#define a X<0.001
+
+#property a -> G a

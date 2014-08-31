@@ -1,0 +1,30 @@
+OWCTY reversed
+--------------
+
+Algorithm computes maximal set of states satisying property:
+"there is an accepting cycle reachable from me". If the set is non-empty 
+in the end, then the presence of reachable accepting cycle is ensured.
+A state is eliminated from the set according these two rules:
+1) there is no immediate successor remaining in the set,
+2) there is no (not necessary immediate) accepting successor in the set.
+
+Algorithm shows similar behaviour compared to simsym (OWCTY) algorithm.  
+This is because it behaves exactly like the OWCTY algorithm on graph with
+reversed edges. However, to be able to perform so, it needs to reverse
+(hence store) edges in the graph. That is why the algorithm suffer from
+higher memory requirements compared to other algorithms. Formal
+description of the algorithm is comming soon. In case of interest in very
+details, feel free to ask Jiri Barnat (barnat@fi.muni.cz).
+
+
+Minimal fixed point computation with storing of edges:
+- Xinxin Liu and Scott Smolka: Simple Linear-time Algorithm for Minimal 
+  Fixed Points, ICALP'98.
+
+Symbolic OWCTY algorithm:
+- Fisler, etal.: Is there a Best Symbolic Cycle-Detection Algorithm? 
+  (2001)
+
+Enumerative OWCTY:
+- I. Cerna and R. Pelanek: Distributed Explicit Fair Cycle Detection
+

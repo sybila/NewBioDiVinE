@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if (($# <1))
+  then echo Missing parameters! 1>&2;
+  HELP="true"
+fi;
+
+if [[ $1 == "-h" || $HELP == "true" ]]
+ then
+	echo -----------------------------------------------------------------
+	echo DiVinE Tool Set
+	echo -----------------------------------------------------------------
+	echo @BINPREFIX@draw_state_space 1.0  \(2005/06/02 09:37\)
+	echo -----------------------------------------------------------------
+	echo @BINPREFIX@draw_state_space takes a bio file and tries to show 
+	echo state space of the model specified in the bio file using
+	echo xDot. To show the state space, @BINPREFIX@draw_state_space 
+	echo calls @BINPREFIX@predot and xdot. All switches passed 
+	echo to @BINPREFIX@draw_state_space are forwarded to @BINPREFIX@predot.
+	echo
+	echo "Usage: @BINPREFIX@draw_state_space [switches] file.bio"
+	echo 
+	`dirname $0`/@BINPREFIX@predot -h
+        exit;
+fi;
+
+`dirname $0`/@BINPREFIX@predot $1 $2 $3 $4 $5 $6 $7 $8 $9 1> temp.$$.dot && xdot temp.$$.dot
+rm -f temp.$$.dot

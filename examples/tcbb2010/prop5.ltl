@@ -1,0 +1,5 @@
+#define b pRB > 4
+
+#property FG (b)
+
+

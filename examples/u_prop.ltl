@@ -1,0 +1,4 @@
+#define a E>0.95
+#define b E<0.95
+
+#property b || ( b R ( a || ( a R b )))

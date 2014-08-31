@@ -1,0 +1,5 @@
+#define a1 x<0.002
+#define a2 x>0.002
+
+#property (!FG(a1) && !FG(a2)) -> (G ((a1 -> F(a2)) && (a2 -> F(a1))))
+

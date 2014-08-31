@@ -1,0 +1,4 @@
+#define a U<1.03948948948949
+#define b U>1.20590590590591
+
+#property GF( a && b )

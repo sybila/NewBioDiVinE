@@ -1,0 +1,17 @@
+Distributed MAP
+===============
+
+The MAP algorithm computes the maximal accepting predecessors of all states
+to detect an accepting cycle. Algorithm works in iterations separated by
+synchronizations of workstations. Algorithm allows to change type of state
+space search and ordering of states (to compute _maximal_ accepting
+predecessor).
+
+Current version features:
+-------------------------
+- zatim nic
+
+History
+-------
+- zatim nic
+

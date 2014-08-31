@@ -1,0 +1,24 @@
+#! /bin/sh
+# Replacement of standard script missing - its standard behaviour is not needed 
+# in our project
+
+ARG=$1
+while test ! "x$ARG" = 'x--run' && test $# -ne 0; do
+	shift;
+	ARG=$1;
+done
+
+
+if test "x$ARG" = 'x--run'; then
+	shift;   #no more care about the string '--run',
+	         #only its arguments are important
+	if ! $@; then   #try to run the program specified in argument --run
+		 echo "Problem during run of $*" 1>&2
+		 exit 1
+	fi
+else
+	echo "No parameter --run specified!" 1>&2 #--run is needed
+	exit 1
+fi
+
+

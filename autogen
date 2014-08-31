@@ -1,0 +1,44 @@
+#!/bin/sh
+
+#Tries to run aclocal
+echo "Running aclocal - marco creating utility of Automake:"
+if aclocal; then
+  echo "Run of aclocal successfuly complete."
+  echo ""
+else
+  echo "Error during run of aclocal or aclocal not found." >&2
+  exit 1
+fi
+
+#Tries to run automake
+echo "Running automake:"
+if automake --foreign; then
+  echo "Run of automake successfuly complete."
+  echo ""
+else
+  echo "Error during run of automake or automake not found." >&2
+  exit 2
+fi
+
+#Tries to run autoconf
+echo "Running autoconf:"
+if autoconf; then
+  echo "Run of autoconf successfuly complete."
+  echo ""
+else
+  echo "Error during run of autoconf or autoconf not found." >&2
+  exit 3
+fi
+
+#Tries to run ./configure
+echo "Running ./configure:"
+if ./configure; then
+  echo "Run of ./configure successfuly complete."
+  echo ""
+else
+  echo "Error during run of ./configure or ./configure not found." >&2
+  exit 3
+fi
+
+echo "All files for compilation generated. Please run make"
+

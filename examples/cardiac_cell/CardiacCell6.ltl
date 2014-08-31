@@ -1,0 +1,4 @@
+#define a U < 0.3
+#define b U > 0.13
+
+#property G( a && b )

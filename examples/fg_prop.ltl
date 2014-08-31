@@ -1,0 +1,4 @@
+#define a Lp>100
+#define b Lp<200
+
+#property GF( !a || !b )

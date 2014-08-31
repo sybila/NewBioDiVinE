@@ -1,0 +1,16 @@
+#
+# Artificial example model (two degrading species), sanity OK.
+#
+VARS:x,y
+
+EQ:x = (-0.6)*x + 0.00007
+EQ:y = (-0.5)*y + 0.00006
+
+
+THRES:x:0.0001, 0.5, 1
+THRES:y:0.0001,0.3,0.5
+
+INIT: x:0.0001,0.5; y:0.0001,0.3
+
+system async;
+

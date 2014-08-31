@@ -1,0 +1,39 @@
+BINPREFIX = divine.
+
+DEFAULT_CXXFLAGS= -std=c++11
+
+# DiVinE's include directory
+AM_CPPFLAGS=-DNETBUFFERSIZE=$(NETBUFFERSIZE) -DDIVINE_BINPREFIX=$(BINPREFIX) -I $(top_srcdir)/src
+
+SEVINE_LIB=$(top_srcdir)/lib/libsevine.a
+DIVINE_LIB=$(top_srcdir)/lib/libdivine.a
+TOP_PATH=$(abs_top_srcdir)
+
+pkgstoredir=$(pkgdatadir)/store
+pkgimagesdir=$(pkgdatadir)/images
+
+if FORCE_CVS_STYLE_COMPILATION
+  CXXFLAGS+=$(DEFAULT_CXXFLAGS) $(DEBUG_YES_CXXFLAGS)
+  CPPFLAGS+=$(DEFAULT_CPPFLAGS) $(CHECKS_SLOW_CPPFLAGS) $(DEBUG_YES_CPPFLAGS)
+else
+  CXXFLAGS+=$(CUSTOM_CXXFLAGS)
+  CPPFLAGS+=$(CUSTOM_CPPFLAGS)
+endif
+
+if CVSDATAPATH
+  M4_DEFS_PATH=$(TOP_PATH)/tool/model_manipulation
+  PERL_MODULES_PATH=$(TOP_PATH)/tool/model_manipulation
+else
+  M4_DEFS_PATH=$(pkgdatadir)
+  PERL_MODULES_PATH=$(pkgdatadir)
+endif
+
+COMMON_SUBSTITUTIONS=sed -e 's,[@]TOP_PATH[@],$(TOP_PATH),g; \
+                             s,[@]BINPREFIX[@],$(BINPREFIX),g; \
+                             s,[@]PERL_MODULES_PATH[@],$(PERL_MODULES_PATH),g; \
+                             s,[@]M4_DEFS_PATH[@],$(M4_DEFS_PATH),g'
+
+					    
+docdir = $(datadir)/doc
+pkgdocdir = $(docdir)/$(PACKAGE)
+

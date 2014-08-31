@@ -1,0 +1,6 @@
+[repository]
+native = LF
+
+[patterns]
+**.hpp = native
+**.cpp = native

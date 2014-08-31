@@ -1,0 +1,179 @@
+#!/bin/bash
+
+# Written by Jiri Barnat
+# Usage: combine -h
+
+
+MYNAME=`echo $0|sed 's!.*/!!'`
+
+do_it()
+{
+  if [ $DETERM == "yes" ]
+  then   echo $1 |`dirname $0`/@BINPREFIX@ltl2ba -g -O6 -t -p >>$2
+  else   echo $1 |`dirname $0`/@BINPREFIX@ltl2ba -g -O6 -t >>$2
+  fi
+}
+
+
+
+version()
+{
+ echo "$MYNAME version 1.5"
+}
+
+usage()
+{
+ echo "-----------------------------------------------------------------"
+ echo "DiVinE Tool Set"
+ echo "-----------------------------------------------------------------"
+ version
+ echo "-----------------------------------------------------------------"
+ echo "This script is used to make product .dve or .probdve files. It combines " 
+ echo "a dve/probdve model file without LTL property with LTL properties given " 
+ echo "in an .ltl file. Each combination is written into a separate .dve or "
+ echo ".probdve file."
+ echo 
+ echo "Usage: "
+ echo "$MYNAME [switches] file.[m,prob,mprob]dve file.[m]ltl [preprocessor defs]"
+ echo
+ echo "switches:"
+    echo " -p x   process only x-th property from file file.ltl or file.mltl"
+    echo -n " -o     do not create product file, "
+    echo "but print its contents to stdout "
+    echo -n "        (-o can be used only if either there is only one formula "
+    echo "in file.ltl"
+    echo "         or there is a formula specified with the switch -p,"
+    echo "         -o implies switch -q)"
+    echo " -q     do not print names of produced files (quiet mode)"
+    echo " -h     show this small help" 
+    echo " -v     show $MYNAME version" 
+    echo " -d     determinize/semidetrminize property automaton"
+}
+
+EXTENSION=bio
+DETERM=no
+SINGLEPROP=no
+OUT=no
+NMBR=0
+QUIET=no
+
+while getopts dqhop:v VOLBA
+  do
+    case $VOLBA in
+    o)     OUT=yes; QUIET="yes";;
+    p)     SINGLEPROP=yes; NMBR=$OPTARG;;
+    q)     QUIET=yes;;
+    v)     version;exit 1;;
+    d)     DETERM=yes;;
+    \?|h)    usage
+           exit 1;;
+    esac
+done
+shift $(($OPTIND-1))
+
+if [ $# -lt 2 ];
+  then 
+    usage
+    exit 1
+fi
+
+if [ ! -e $1 ];
+  then echo File $1 does not exists. >/dev/stderr ;
+  exit 1
+fi;
+
+if [ ! -e $2 ];
+  then echo File $2 does not exists. >/dev/stderr ;
+  exit 1
+fi;
+
+FILE=$1
+LTL=$2
+shift;shift;
+
+
+if [ -n "`echo -n $FILE|grep probdve`" ];
+    then EXTENSION=probdve
+fi
+
+if [ -n "`echo -n $LTL|grep .mltl`" ];
+    then @BINPREFIX@preprocessor $* $LTL >___TemPLTL
+	 LTL=___TemPLTL    
+fi
+
+MAX=`grep ^'[ ]*#property' $LTL | nl | tail -n 1 | cut -f1 | sed 's/ //g'`
+
+if [ $SINGLEPROP == "yes" ] && ( (($MAX < $NMBR)) || (($NMBR < "1")) ); 
+    then echo "Invalid formula specification. Use number between 1 and $MAX."
+    exit 1
+fi
+
+if [ $MAX != "1" ] && [ $SINGLEPROP == "no" ] && [ $OUT == "yes" ] ;
+    then echo "Cannot print more than one file to standard output."
+    exit 1
+fi
+
+# deal with .dve and .probdve
+NAME=`echo $FILE|sed 's/\.dve$//' | sed 's/\.probdve$//'`
+
+# deal with .mdve
+if [ -n "`echo -n $FILE|grep mdve$`" ];
+    then @BINPREFIX@preprocessor $* $FILE >___TemPFilE2
+         PARAMS=`echo $*|sed 's/-D/[/'|sed 's/ //'`
+	 if [ -n "`echo -n $PARAMS`" ];
+	 then PARAMS="$PARAMS]"
+	 fi
+	 NAME=`echo $FILE|sed 's/\.mdve$//'`$PARAMS
+	 FILE=___TemPFilE2;
+fi
+
+# deal with .mprobdve
+if [ -n "`echo -n $FILE|grep mprobdve$`" ];
+    then @BINPREFIX@preprocessor $* $FILE >___TemPFilE2
+         PARAMS=`echo $*|sed 's/-D/[/'|sed 's/ //'`
+	 if [ -n "`echo -n $PARAMS`" ];
+	 then PARAMS="$PARAMS]"
+ 	 fi
+	 NAME=`echo $FILE|sed 's/\.mprobdve$//'`$PARAMS
+	 FILE=___TemPFilE2;
+fi
+
+N=0
+for i in `grep ^'[ ]*#property' $LTL|sed 's/ /%%%/g'`;
+do
+    i=`echo $i | sed 's/%%%/ /g' | sed 's/[ ]*#property[ ]*//'`
+    N=`echo $(($N + 1))`
+    if [ $SINGLEPROP == "yes" ] && (($NMBR != $N)); then continue ; fi
+  
+
+    grep -v "system async" $FILE | grep -v "system sync" >___TemPFilE
+    grep ^'[ ]*#define' $LTL >___TemPFilE1
+    do_it "$i" ___TemPFilE1
+    cpp -E ___TemPFilE1|grep -v ^'#'|grep -v ^$ >>___TemPFilE
+    echo >>___TemPFilE
+    if [ -n "`grep 'system async' $FILE`" ]
+       then echo "system async property LTL_property;" >>___TemPFilE 
+       else echo "system sync property LTL_property;" >>___TemPFilE 
+    fi
+
+    if [ $OUT == "yes" ]
+	then  cat ___TemPFilE | uniq 
+	else if [ $QUIET != "yes" ]; then echo $NAME.prop$N.$EXTENSION"  "$i ; fi
+	     cat ___TemPFilE | uniq >$NAME.prop$N.$EXTENSION  
+    fi
+done
+rm -f ___TemPFilE ___TemPFilE1 ___TemPFilE2 ___TemPLTL
+exit
+
+
+
+
+
+
+
+
+
+
+
+
+

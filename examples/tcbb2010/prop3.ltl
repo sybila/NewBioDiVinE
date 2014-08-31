@@ -1,0 +1,6 @@
+#define a E2F1 < 2
+#define b E2F1 >= 2
+
+#property ((a) -> F G(b))
+
+

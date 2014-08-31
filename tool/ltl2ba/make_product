@@ -1,0 +1,25 @@
+#! /bin/bash
+
+# First argument of the script is name of file with LTL formulae (.ltl)
+# Second argument is name of DiVinE source file (.dve) without property
+# automaton
+
+# Negation of LTL formulae are translated to Buchi automata and
+# this automata are writen at the end of new DiVine source file
+
+# First translator
+# options:
+#  -g - negate LTL formula
+#  -d - if this option is not used, translator compute only generalized
+#       Buchi automaton (unrecomended)
+#  -l file - text file with LTL formulae
+#  -f file[.dve] - input DiVinE source file
+#  -O level of optimization (recomended 6)
+
+#./ltl2buchi -g -l $1 -f $2 -d -O6
+
+# Second translator (recomend to use)
+# options:
+#  -g -l -f -O - are the same as in previus translator
+
+./ltl2ba -g -l $1 -f $2 -O6

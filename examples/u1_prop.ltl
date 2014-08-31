@@ -1,0 +1,4 @@
+#define a E>0.95
+#define b E<0.95
+
+#property a && (a U (b && (b U a)))
