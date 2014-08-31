@@ -367,7 +367,7 @@ private:
 
 			if (eq[i].has_param())
 			{
-				BOOST_ASSERT(ret_dim == dims());
+//				BOOST_ASSERT(ret_dim == dims());
 				ret_dim = eq[i].param();
 				denom = v;
 			}
