@@ -38,7 +38,9 @@ const int TAG_PRINT = DIVINE_TAG_USER + 14;
 // {{{ structures
 
 struct appendix_t 
-{ map_value_t act_map; //actual value of function map && "pointer" to predecessor during counterexample reconstruction ("global_state_ref_t")
+{
+public:
+ map_value_t act_map; //actual value of function map && "pointer" to predecessor during counterexample reconstruction ("global_state_ref_t")
   map_value_t old_map; // value of function map from the previous iteration && auxiliary value during counterexample reconstruction
   list<state_ref_t>::iterator shrinkA_ptr;
 } appendix;
@@ -475,13 +477,17 @@ void RELAX(state_t state, map_value_t propag, map_value_t subgraph)
 	else 
 	  { 
 	    app.act_map=propag; //due to execution of this line the next iteration 
-	    app.shrinkA_ptr = list<state_ref_t>::iterator(0); //is necessary	    
+	    list<state_ref_t> e;
+            e.push_back(state_ref_t());
+            app.shrinkA_ptr = e.begin(); //is necessary	    
  	  }
       }
     else 
       {
 	app.act_map = propag;
-	app.shrinkA_ptr = list<state_ref_t>::iterator(0);
+list<state_ref_t> e;
+      e.push_back(state_ref_t());	
+app.shrinkA_ptr = e.begin();
       }
     waiting.push(state_ref);
     st.set_app_by_ref(state_ref, app);
@@ -489,7 +495,9 @@ void RELAX(state_t state, map_value_t propag, map_value_t subgraph)
   else //state already visited
     {
       st.get_app_by_ref(state_ref, app);
-      if ((propag == app.act_map) && (app.shrinkA_ptr != list<state_ref_t>::iterator(0)))
+      list<state_ref_t> e;
+      e.push_back(state_ref_t());
+      if ((propag == app.act_map) && (app.shrinkA_ptr != e.begin()))
 	{
 	  //accepting cycle revealed
 	  send_cycle_detect(&state_ref);
@@ -511,13 +519,17 @@ void RELAX(state_t state, map_value_t propag, map_value_t subgraph)
 		  else
 		    {
 		      app.act_map=propag; //due to execution of this line the next iteration 
-		      app.shrinkA_ptr = list<state_ref_t>::iterator(0); //is necessary
+		      list<state_ref_t> e;
+                      e.push_back(state_ref_t());
+                      app.shrinkA_ptr = e.begin(); //is necessary
 		    }
 		}
 	      else 
 		{
 		  app.act_map = propag;
-		  app.shrinkA_ptr = list<state_ref_t>::iterator(0);
+list<state_ref_t> e;
+      e.push_back(state_ref_t());		  
+app.shrinkA_ptr = e.begin();
 		}
 	      waiting.push(state_ref);
 	      st.set_app_by_ref(state_ref, app);
@@ -527,10 +539,14 @@ void RELAX(state_t state, map_value_t propag, map_value_t subgraph)
 	      if (((app.old_map == subgraph)||((app.old_map.nid==divine::MAX_ULONG_INT) && (subgraph==NULL_MAP_VISIT))) && (cmp_map(app.act_map,propag)))
 		{                           //this (after "||") is necessary due to counting of states+transitions
 		  app.act_map = propag;
-		  if (app.shrinkA_ptr != list<state_ref_t>::iterator(0))
+list<state_ref_t> e;
+      e.push_back(state_ref_t());		  
+if (app.shrinkA_ptr != e.begin())
 		    {
 		      shrinkA.erase(app.shrinkA_ptr);
-		      app.shrinkA_ptr = list<state_ref_t>::iterator(0);
+list<state_ref_t> e;
+      e.push_back(state_ref_t());		      
+app.shrinkA_ptr = e.begin();
 		    }
 		  waiting.push(state_ref);
 		  st.set_app_by_ref(state_ref, app);
@@ -727,7 +743,9 @@ void cycle_recovering()
   if (acc_cycle_is_mine)
     {
       appendix.act_map=NULL_MAP;
-      appendix.shrinkA_ptr=list<state_ref_t>::iterator(0);
+      list<state_ref_t> e;
+      e.push_back(state_ref_t());
+      appendix.shrinkA_ptr=e.begin();
       appendix.old_map.bfs_order=0;
       appendix.old_map.nid=nid;
       appendix.old_map.id=EXTRACT_CYCLE_VISIT;
@@ -815,7 +833,9 @@ void path_recovering()
   if ((size_int_t)distributed.get_state_net_id(s0) == nid)
     { 
       appendix.act_map=NULL_MAP;
-      appendix.shrinkA_ptr=list<state_ref_t>::iterator(0);
+list<state_ref_t> e;
+      e.push_back(state_ref_t());
+      appendix.shrinkA_ptr=e.begin();
       appendix.old_map.bfs_order=0;
       appendix.old_map.nid=nid;
       appendix.old_map.id=EXTRACT_PATH_VISIT;
@@ -1015,7 +1035,9 @@ void DEL_ACC()
     st.get_app_by_ref(state_ref,app);
     app.old_map=app.act_map;
     app.act_map=NULL_MAP;
-    app.shrinkA_ptr=list<state_ref_t>::iterator(0); //really necessary?
+    list<state_ref_t> e;
+      e.push_back(state_ref_t());
+    app.shrinkA_ptr=e.begin(); //really necessary?
     st.set_app_by_ref(state_ref,app);
     
     //removing states from shrinkA to structure waiting
@@ -1123,8 +1145,10 @@ int main(int argc, char **argv)
           st.set_ht_size(htsize);
         }
       appendix.act_map=NULL_MAP; 
-      appendix.old_map=NULL_MAP; 
-      appendix.shrinkA_ptr=list<state_ref_t>::iterator(0);
+      appendix.old_map=NULL_MAP;
+      list<state_ref_t> e;
+      e.push_back(state_ref_t());	 
+      appendix.shrinkA_ptr=e.begin();
       st.set_appendix(appendix);
 
       /* decisions about the type of an input */
@@ -1219,7 +1243,9 @@ int main(int argc, char **argv)
 		  else
 			{ 
 			  appendix.act_map=NULL_MAP;
-			  appendix.shrinkA_ptr=list<state_ref_t>::iterator(0);
+                          list<state_ref_t> e;
+                          e.push_back(state_ref_t());
+			  appendix.shrinkA_ptr=e.begin();
 			}
 		  appendix.old_map=NULL_MAP_VISIT;
 		  appendix.old_map.nid = divine::MAX_ULONG_INT; //to detect whether a state is handled for the first time in MAP() in order to count (cross) trans correctly

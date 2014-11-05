@@ -10,6 +10,10 @@ AM_INIT_AUTOMAKE([tar-pax foreign])
 
 AC_CONFIG_SRCDIR([src/sevine.h])   #only safety check - not too important
 
+#check for os type
+AC_CANONICAL_BUILD
+
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
@@ -56,6 +60,8 @@ AC_DIVINE
 sinclude(ac_all_deps_of_cvs.m4)
 
 #conditional make of support
+AM_CONDITIONAL(BUILD_OS_IS_DARWIN,
+[case $build_os in darwin* ) true ;; * ) false ;; esac])
 AM_CONDITIONAL([BUILDSUPPORT], [test "$IS_CVS_COPY" = yes])
 AM_CONDITIONAL([CVSDATAPATH], [test "$IS_CVS_COPY" = yes])
 AM_CONDITIONAL([HAVEMPI], [test "x$MPI_FOUND" = "x1"])

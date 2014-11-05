@@ -77,7 +77,7 @@ const char * input_file_ext = 0;
 
 //!!!be aware: according to the operator< (net_state_ref_t,net_state_ref_t), NET_STATE_REF_NULL has to be the highest possible value of net_state_ref_t!!!
 state_ref_t REF_NULL;//by default, it is invalidated thus assigned to very high value
-const net_state_ref_t NET_STATE_REF_NULL = { REF_NULL, divine::MAX_ULONG_INT};
+const net_state_ref_t NET_STATE_REF_NULL = { REF_NULL, static_cast<int>(divine::MAX_ULONG_INT)};
 
 distributed_t distributed;
 distr_reporter_t reporter(&distributed);
