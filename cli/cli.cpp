@@ -81,7 +81,8 @@ void cli_usage()
   cout <<"      -j                 set number of threads for multi-threading\n";
   cout <<"      -c                 show counterexample states\n";
   cout <<"      -V                 print some statistics\n";
-  cout <<"      -b                 show base coloring\n";  
+  cout <<"      -b                 show base coloring\n";
+  cout <<"      -f                 use faster but less accurate algorithm for abstraction" << endl;  
   cout <<"      -s                 show equations (schematically)\n";  
   cout <<"      -t                 show all thresholds (including calculated ones)\n"; 
   cout << endl;
