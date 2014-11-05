@@ -375,6 +375,13 @@ int main(int argc, char * argv[])
 	typedef paramset<double, sba_t::vertex_descriptor> pp_t;
 	pp_t pp3;
 	
+	bool useFastLinearAproximation = false;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (argv[i] == "-f")
+			useFastLinearAproximation = true;
+	}
+	
 	// file opening
 	char *file_name = argv[argc - 1];
 	if (!strncmp(file_name, "bio", 3)) {
@@ -396,7 +403,7 @@ int main(int argc, char * argv[])
 	parser.parse();
 	Model<double> &storage = parser.returnStorage();
 
-	storage.RunAbstraction();
+	storage.RunAbstraction(useFastLinearAproximation);
 
 	fin.close();
 	std::vector<std::pair<double, double> > param_ranges(storage.getParamRanges());
