@@ -87,7 +87,7 @@ void cli_usage()
   cout << endl;
  
   cout <<"  only options for predot:\n";
-  cout <<"      -h                 show this help" <<endl;
+  cout <<"      -h                 show predot help" <<endl;
   cout <<"      -v                 show predot version"<<endl;
   cout <<"      -f                 faster but less accurate abstraction" << endl;
   cout <<"      -a                 draw accepting states (Buchi acceptance only)" <<endl;
