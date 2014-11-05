@@ -55,12 +55,11 @@ private:
 	    bool positive;
 	    
         step() {}
-		step(std::size_t dim, value_type theta, value_type a, value_type b, bool positive = true)
-                    : dim(dim), theta(theta), a(a), b(b), positive(positive) {
+		step(std::size_t new_dim, value_type new_theta, value_type new_a, value_type new_b, bool new_positive = true)
+                    : dim(new_dim), theta(new_theta), a(new_a), b(new_b), positive(new_positive) {
         	if( (positive && a > b) || (!positive && a < b) ) {
-        		value_type temp = a;
-        		this.a = b;
-        		this.b = temp;
+        		a = new_b;
+        		b = new_a;
         	}
         }
         step(const step& s) : dim(s.dim), theta(s.theta), a(s.a), b(s.b), positive(s.positive) {}
@@ -221,14 +220,16 @@ template <typename T>
 std::vector< Summember<T> > Summember<T>::hillAbstraction(std::vector<ramp> ramps, std::size_t replacedIndex) {
 
     std::vector< Summember<T> > result;
+//    std::cout << "removing hill function with index " << replacedIndex-1 << " and size before is " << hills.size() <<"\n";
     for(std::vector<std::size_t>::iterator it = hills.begin(); it != hills.end(); it++) {
         if(*it == replacedIndex) {
             hills.erase(it);
             break;
         }
     }
+//    std::cout << "size after is " << hills.size() << "\n";
 
-    for(int r = 0; r < ramps.size(); r++) {
+	for (size_t r = 0; r < ramps.size(); r++) {
         Summember<T> sum;
         sum.AddRamp(ramps.at(r));
         result.push_back(sum * (*this));
@@ -242,14 +243,16 @@ template <typename T>
 std::vector< Summember<T> > Summember<T>::sigmoidAbstraction(std::vector<ramp> ramps, std::size_t replacedIndex) {
 
     std::vector< Summember<T> > result;
+//    std::cout << "removing sigmoid with index " << replacedIndex-1 << " and size before is " << sigmoids.size() <<"\n";
     for(std::vector<std::size_t>::iterator it = sigmoids.begin(); it != sigmoids.end(); it++) {
         if(*it == replacedIndex) {
             sigmoids.erase(it);
             break;
         }
     }
+//    std::cout << "size after is " << sigmoids.size() << "\n";
 
-    for(int r = 0; r < ramps.size(); r++) {
+	for (size_t r = 0; r < ramps.size(); r++) {
         Summember<T> sum;
         sum.AddRamp(ramps.at(r));
         result.push_back(sum * (*this));

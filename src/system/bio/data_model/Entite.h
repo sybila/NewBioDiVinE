@@ -33,24 +33,24 @@ public:
 	void PutNumber(std::string number);
 
 	// Functions saving ramp functions found in equation
-	void PutRp(std::string var, std::string theta1, std::string theta2, std::string a = 1, std::string b = 0);
-	void PutRm(std::string var, std::string theta1, std::string theta2, std::string a = 1, std::string b = 0);
-	void PutRpCoor(std::string var, std::string theta1, std::string theta2, std::string y1 = 0, std::string y2 = 1);
-	void PutRmCoor(std::string var, std::string theta1, std::string theta2, std::string y1 = 1, std::string y2 = 0);
+	void PutRp(std::string var, std::string theta1, std::string theta2, std::string a = "1", std::string b = "0");
+	void PutRm(std::string var, std::string theta1, std::string theta2, std::string a = "1", std::string b = "0");
+	void PutRpCoor(std::string var, std::string theta1, std::string theta2, std::string y1 = "0", std::string y2 = "1");
+	void PutRmCoor(std::string var, std::string theta1, std::string theta2, std::string y1 = "1", std::string y2 = "0");
 
 	// Functions saving sigmoids found in equation
-	void PutSp(std::string points, std::string var, std::string k, std::string theta1, std::string a = 1, std::string b = 0);
-	void PutSm(std::string points, std::string var, std::string k, std::string theta1, std::string a = 1, std::string b = 0);
-	void PutSpInv(std::string points, std::string var, std::string k, std::string theta1, std::string a, std::string b = 0);
-	void PutSmInv(std::string points, std::string var, std::string k, std::string theta1, std::string a, std::string b = 0);
+	void PutSp(std::string points, std::string var, std::string k, std::string theta1, std::string a = "1", std::string b = "0");
+	void PutSm(std::string points, std::string var, std::string k, std::string theta1, std::string a = "1", std::string b = "0");
+	void PutSpInv(std::string points, std::string var, std::string k, std::string theta1, std::string a = "1", std::string b = "0");
+	void PutSmInv(std::string points, std::string var, std::string k, std::string theta1, std::string a = "1", std::string b = "0");
 
 	// Functions saving step functions found in equation
-    void PutHp(std::string var, std::string theta, std::string a = 1, std::string b = 0);
-    void PutHm(std::string var, std::string theta, std::string a = 1, std::string b = 0);
+    void PutHp(std::string var, std::string theta, std::string a = "1", std::string b = "0");
+    void PutHm(std::string var, std::string theta, std::string a = "1", std::string b = "0");
     
     // Functions saving Hill functions found in equation
-    void PutHillp(std::string var, std::string theta, std::string n, std::string a = 1, std::string b = 0);
-    void PutHillm(std::string var, std::string theta, std::string n, std::string a = 1, std::string b = 0);
+    void PutHillp(std::string var, std::string theta, std::string n, std::string a = "1", std::string b = "0");
+    void PutHillm(std::string var, std::string theta, std::string n, std::string a = "1", std::string b = "0");
 
 	///////
 
@@ -220,6 +220,8 @@ void Entite<T>::PutRp(std::string var, std::string theta1, std::string theta2, s
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -235,6 +237,8 @@ void Entite<T>::PutRm(std::string var, std::string theta1, std::string theta2, s
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -257,6 +261,8 @@ void Entite<T>::PutRpCoor(std::string var, std::string theta1, std::string theta
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -279,6 +285,8 @@ void Entite<T>::PutRmCoor(std::string var, std::string theta1, std::string theta
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -304,6 +312,8 @@ void Entite<T>::PutSp(std::string points, std::string var, std::string k, std::s
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -329,6 +339,8 @@ void Entite<T>::PutSm(std::string points, std::string var, std::string k, std::s
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -360,6 +372,8 @@ void Entite<T>::PutSpInv(std::string points, std::string var, std::string k, std
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -391,6 +405,8 @@ void Entite<T>::PutSmInv(std::string points, std::string var, std::string k, std
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -401,8 +417,10 @@ void Entite<T>::PutHp(std::string var, std::string theta, std::string a, std::st
     T bb = getNumberFromString(b);
     
     T eps = std::numeric_limits<value_type>::epsilon();
+//    std::cout << "Step+(" << var << "," << std::setprecision(20) << th << "," << aa << "," << bb << ") into ";
     T th1 = th - ( eps == 0 ? 1 : eps );
     T th2 = th + ( eps == 0 ? 1 : eps );
+//    std::cout << "Ramp+(" << var << "," << std::setprecision(20) << th1 << "," << th2 << std::setprecision(6) << "," << aa << "," << bb << ")\n";
     
     //saving new thresholds th1 and th2
     model.AddThresholdName(var);
@@ -425,11 +443,14 @@ void Entite<T>::PutHp(std::string var, std::string theta, std::string a, std::st
     Summember<T> new_summember;
     for(uint i = 0; i < model.getVariables().size(); i++) {
         if(var.compare(model.getVariable(i)) == 0) {
+//        	new_summember.AddStep(i + 1, th, aa, bb, true);
 			new_summember.AddRamp(i + 1, th1, th2, aa, bb, false);
             AddSummember(new_summember);
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+
 }
 
 template <typename T>
@@ -440,8 +461,10 @@ void Entite<T>::PutHm(std::string var, std::string theta, std::string a, std::st
     T bb = getNumberFromString(b);
    
     T eps = std::numeric_limits<value_type>::epsilon();
+//    std::cout << "Step-(" << var << "," << std::setprecision(20) << th << "," << a << "," << b << ") into ";
     T th1 = th - ( eps == 0 ? 1 : eps );
     T th2 = th + ( eps == 0 ? 1 : eps );
+//    std::cout << "Ramp+(" << var << "," << std::setprecision(20) << th1 << "," << th2 << std::setprecision(6) << "," << aa << "," << bb << ")\n";
     
     //saving new thresholds th1 and th2
     model.AddThresholdName(var);
@@ -464,11 +487,14 @@ void Entite<T>::PutHm(std::string var, std::string theta, std::string a, std::st
     Summember<T> new_summember;
     for(uint i = 0; i < model.getVariables().size(); i++) {
         if(var.compare(model.getVariable(i)) == 0) {
+//        	new_summember.AddStep(i + 1, th, aa, bb, false);
 			new_summember.AddRamp(i+1, th1, th2, aa, bb, true);
             AddSummember(new_summember);
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+    
 }
 
 template <typename T>
@@ -495,6 +521,8 @@ void Entite<T>::PutHillp(std::string var, std::string theta, std::string n, std:
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+        
 }
 
 template <typename T>
@@ -521,12 +549,14 @@ void Entite<T>::PutHillm(std::string var, std::string theta, std::string n, std:
             return;
         }
     }
+    //TODO: i dont know what will happen if var wasn't find in variables
+    
 }
 
 template <typename T>
 /*const*/ Entite<T>  Entite<T>::operator+(/*const*/ Entite<T> & e2)
 {
-	Entite<T>  e_final(this->model);
+	Entite<T>  e_final(model);
 	Entite<T> & e1 = *this;
 
 	/*TODO: special cases*/
@@ -549,8 +579,9 @@ template <typename T>
 template <typename T>
 const Entite<T> Entite<T>::operator*(/*const*/ Entite<T> & e2)
 {
+	Entite<T>  e_final(model);
 	Entite<T> & e1 = *this;
-	Entite<T>  e_final(this->model);
+	
 
 	/*TODO: special cases*/
 
