@@ -12,7 +12,7 @@ fi
 
 #Tries to run automake
 echo "Running automake:"
-if automake --foreign; then
+if automake --add-missing --foreign; then
   echo "Run of automake successfuly complete."
   echo ""
 else
