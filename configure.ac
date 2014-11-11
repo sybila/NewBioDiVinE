@@ -6,7 +6,7 @@ AC_INIT(DiVinE-cluster, 0.8.1-rc1, [divine(a)fi.muni.cz])
 AC_SUBST(abs_top_srcdir)           #enables detection of absolute path
 AC_CONFIG_AUX_DIR([support/src/makeutils])
 AC_LANG(C++)
-AM_INIT_AUTOMAKE([tar-pax foreign])
+AM_INIT_AUTOMAKE([--add-missing tar-pax foreign])
 
 AC_CONFIG_SRCDIR([src/sevine.h])   #only safety check - not too important
 
