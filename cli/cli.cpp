@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
 			close(fd[0]);
 			dup2(fd[1],STDOUT_FILENO);
 			close(fd[1]);
-			execl(programWithPath.c_str(),"divine.combine",modelFile.c_str(),propertyFile.c_str());
+			execl(programWithPath.c_str(),"divine.combine",modelFile.c_str(),propertyFile.c_str(), NULL);
 			_exit(EXEC_FAILED);
 			
 		case -1:	// in fork error

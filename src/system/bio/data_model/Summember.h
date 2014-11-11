@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 
+typedef unsigned int uint;
+
 template <typename T>
 class Summember
 {

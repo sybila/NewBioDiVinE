@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #Tries to run aclocal
-echo "Running aclocal - marco creating utility of Automake:"
+echo "Running aclocal - macro creating utility of Automake:"
 if aclocal; then
   echo "Run of aclocal successfuly complete."
   echo ""
