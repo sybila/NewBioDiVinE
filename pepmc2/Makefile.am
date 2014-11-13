@@ -5,6 +5,7 @@ include $(top_srcdir)/Makefile.am.global
 bin_PROGRAMS = pepmc
 pepmc_SOURCES = main.cpp
 
+BOOST_LIBRARY_DIR = $(BOOST_LIB_DIR)
 
 if BUILD_OS_IS_DARWIN
 ba=-L$(BOOST_LIBRARY_DIR) -lboost_thread-mt -lboost_system-mt
@@ -12,7 +13,7 @@ else
 ba=-DPEPMC_LINUX_SETAFFINITY -lboost_thread -lboost_system
 endif
 
-BOOST_LIBRARY_DIR = $(BOOST_LIB_DIR)
+
 
 
 pepmc: force
