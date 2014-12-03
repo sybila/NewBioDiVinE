@@ -222,12 +222,34 @@ template <typename T>
 void Model<T>::AddInitsFstValue(std::string value) {
     std::pair<T, T> values;
     values.first = (T)std::stod(value);
+    bool correctValue = false;
+    for(size_t i = 0; i < getThresholdsForVariable(inits.back()).size(); i++) {
+    	if(values.first == getThresholdsForVariable(inits.back()).at(i)) {
+    		correctValue = true;
+    		break;
+		}
+    }
+    if(!correctValue) {
+    	std::cerr  << "Error: INIT values of variable must be from THRES values of that variable.\n";
+    	exit(15);
+    }
     inits_values.push_back(values);
 }
 
 template <typename T>
 void Model<T>::AddInitsSndValue(std::string value) {
     inits_values.back().second = (T)std::stod(value);
+    bool correctValue = false;
+    for(size_t i = 0; i < getThresholdsForVariable(inits.back()).size(); i++) {
+    	if(inits_values.back().second == getThresholdsForVariable(inits.back()).at(i)) {
+    		correctValue = true;
+    		break;
+		}
+    }
+    if(!correctValue) {
+    	std::cerr  << "Error: INIT values of variable must be from THRES values of that variable.\n";
+    	exit(15);
+    }
 }
 
 template <typename T>
