@@ -34,7 +34,7 @@ public:
 				res = 0;
 			else if (res > 1)
 				res = 1;
-			return (min_value + (res * (max_value - min_value)));
+			return (/*min_value + */(res * (max_value - min_value)));
 		}
 
 		friend std::ostream& operator<<(std::ostream& out, const ramp& r) {
