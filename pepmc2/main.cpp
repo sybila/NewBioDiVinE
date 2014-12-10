@@ -11,8 +11,6 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 
-
-#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <deque>
@@ -20,27 +18,30 @@
 
 #include "succ.hpp"
 
+#ifdef __GNUC__
 
+#include <sys/time.h>
+
+long long my_clock()
+{
+	timeval tv;
+	gettimeofday(&tv, 0);
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+#else
+
+#include <windows.h>
+
+long long my_clock()
+{
+	return GetTickCount();
+}
+
+#endif
 
 typedef unsigned int uint;
 
-/*
-search for a key in a map and set its value to minimal
-*/
-template <typename T, typename U>
-U min_combine(std::map<T, U> & map, T const & key, U value)
-{
-	typename std::map<T, U>::iterator it = map.find(key);
-	if (it == map.end())
-		it = map.insert(std::make_pair(key, value)).first;
-	else
-	{
-		using std::min;
-		it->second = (min)(it->second, value);
-	}
-
-	return it->second;
-}
 
 template <typename T>
 class single_elem_enum
@@ -71,27 +72,7 @@ private:
 	bool m_valid;
 };
 
-#ifdef __GNUC__
 
-#include <sys/time.h>
-
-long long my_clock()
-{
-	timeval tv;
-	gettimeofday(&tv, 0);
-	return tv.tv_sec*1000 + tv.tv_usec/1000;
-}
-
-#else
-
-#include <windows.h>
-
-long long my_clock()
-{
-	return GetTickCount();
-}
-
-#endif
 
 class default_pmc_visitor
 {
@@ -108,6 +89,7 @@ public:
 	{
 	}
 
+	//shows time between steps
 	void progress(int step, int max)
 	{
 		long long value = 0;
@@ -125,12 +107,14 @@ public:
 		std::cout << step << "/" << max << ": " << value << "ms        \r" << std::flush;
 	}
 
+	//shows bfs levels
 	void succ_bfs_levels(std::size_t levels)
 	{
 		if (verbose)
 			std::cout << "bfs levels: " << levels << std::endl;
 	}
 
+	//counts reachable vertices and shows base coloring 
 	template <typename Coloring>
 	void base_coloring(Coloring const & c)
 	{
@@ -148,16 +132,18 @@ public:
 			std::cout << ci->first << ": " << ci->second << std::endl;
 	}
 
+	//shows counterexample self loop
 	template <typename Paramset, typename Vertex>
 	void counter_example_self_loop(Vertex const & witness, Paramset const & p) const
 	{
 		if (!show_counterexamples)
 			return;
 
-		std::cout << "* " << p << "               " << std::endl;
+		std::cout << "counterexample space " << p << std::endl;
 		std::cout << witness << " <- " << witness << std::endl;
 	}
 
+	//shows counterexample
 	template <typename Coloring, typename Vertex>
 	void counter_example(Coloring const & c, Coloring const & nested_c, Vertex const & witness) const
 	{
@@ -166,14 +152,14 @@ public:
 		if (!show_counterexamples)
 			return;
 
-		std::cout << "* " << nested_c.find(witness)->second << std::endl;
+		std::cout << "counterexample space " << nested_c.find(witness)->second << std::endl;
 
 		Vertex current = witness;
 		std::size_t region = 0;
 		for (;;)
 		{
 			Paramset const & p = nested_c.find(current)->second;
-			typename Paramset::region_t const & r = p.regions()[region];
+			typename Paramset::region_t const & r = p.regions().at(region);
 
 			std::cout << current << "<-" << r.tag << std::endl;
 
@@ -185,7 +171,7 @@ public:
 			Paramset const & new_p = nested_c.find(current)->second;
 			for (std::size_t i = 0; i < new_p.regions().size(); ++i)
 			{
-				typename Paramset::region_t const & new_r = new_p.regions()[i];
+				typename Paramset::region_t const & new_r = new_p.regions().at(i);
 
 				bool subset = true;
 				for (std::size_t j = 0; j < new_r.box.size(); ++j)
@@ -216,6 +202,7 @@ struct no_crop
 	}
 };
 
+/*
 template <typename Structure, typename Paramset, typename Visitor>
 Paramset naive(Structure const & s, Paramset const & pp, Visitor visitor)
 {
@@ -248,6 +235,7 @@ Paramset naive(Structure const & s, Paramset const & pp, Visitor visitor)
 
 	return res;
 }
+*/
 
 template <typename Coloring>
 struct allowed_crop
@@ -422,7 +410,7 @@ int main(int argc, char * argv[])
 	bool show_base_coloring = false;
 	bool verbose = false;
 
-	std::cout << "mro1" << std::endl;
+
 	// Parse arguments
 	for (int i = 1; i < argc; ++i)
 	{
@@ -581,11 +569,11 @@ int main(int argc, char * argv[])
 		pp_t correct_parameters = sch_queue.front().second;
 		correct_parameters.set_difference(violating_parameters);
 		
-		std::cout << sch.succ_message << ": " << sch.succ_next << ": " << correct_parameters << std::endl;
+		std::cout << sch.succ_message << "true set : " << sch.succ_next << ": " << correct_parameters << std::endl;
 		if (!sch.succ_next.empty())
 			sch_queue.push_back(std::make_pair(sch.succ_next, std::move(correct_parameters)));
 		
-		std::cout << sch.fail_message << ": " << sch.fail_next << ": " << violating_parameters << std::endl;
+		std::cout << sch.fail_message << "refuted set: " << sch.fail_next << ": " << violating_parameters << std::endl;
 		if (!sch.fail_next.empty())
 			sch_queue.push_back(std::make_pair(sch.fail_next, std::move(violating_parameters)));
 
